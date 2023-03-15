@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const User = require('../models/User');
-const ErrorResponse = require('../utils/error');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const { isAuthenticated } = require('../middlewares/jwt');
@@ -13,31 +12,31 @@ router.post('/signup', async (req, res, next) => {
   const { email, password, username } = req.body;
   // Check if email or password or name are provided as empty string 
   if (email === "" || password === "" || username === "") {
-    return next(new ErrorResponse('Please fill all the fields to register', 400))
+    res.status(400).json({ message: 'Please fill all the fields to register' });
+    return;
   }
   // Use regex to validate the email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   if (!emailRegex.test(email)) {
-    return next(new ErrorResponse('Email is not a valid format', 400))
+    res.status(400).json({ message: 'Not a valid email format' });
+    return;
   }
    // Use regex to validate the password format
   const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
   if (!passwordRegex.test(password)) {
-    return next(new ErrorResponse('Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter', 400))
+    res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter' });
+    return;
   }
   try {
     const userInDB = await User.findOne({ email });
     if (userInDB) {
-      return next(new ErrorResponse(`User already exists with email ${email}`, 400))
+      res.status(400).json({ message: `User already exists with email ${email}` })
+      return;
     } else {
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(password, salt);
-      const user = await User.create({ email, hashedPassword, username });
-      const publicUser = { // Decide what fields of our user we want to return 
-        username: user.username,
-        email: user.email,
-      }
-      res.status(201).json({ data: publicUser });
+      const newUser = await User.create({ email, hashedPassword, username });
+      res.status(201).json({ data: newUser });
     }
   } catch (error) {
     next(error);
@@ -51,18 +50,20 @@ router.post('/login', async (req, res, next) => {
   const { email, password } = req.body;
   // Check if email or password are provided as empty string 
   if (email === "" || password === "") {
-    return next(new ErrorResponse('Please fill all the fields to login', 400))
+    res.status(400).json({ message: 'Please fill all the fields to login' });
+    return;
   }
   try {
     // First let's see if the user exists
     const userInDB = await User.findOne({ email });
     // If they don't exist, return an error
     if (!userInDB) {
-      return next(new ErrorResponse(`No user registered by email ${email}`, 404));
+      res.status(404).json({ success: false, message: `No user registered by email ${email}` })
+      return;
     } else {
       const passwordMatches = bcrypt.compareSync(password, userInDB.hashedPassword);
       if (passwordMatches) {
-        // Let's create what we want to store 
+        // Let's create what we want to store in the jwt token
         const payload = {
           email: userInDB.email,
           username: userInDB.username,
@@ -78,7 +79,7 @@ router.post('/login', async (req, res, next) => {
         res.status(200).json({ authToken: authToken })
       } else {
         // If the password is not right, return an error
-        next(new ErrorResponse('Unable to authenticate user', 401));
+        res.status(401).json({ success: false, message: 'Unable to authenticate user'})
       }
     }
   } catch (error) {

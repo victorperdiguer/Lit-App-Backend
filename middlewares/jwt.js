@@ -1,5 +1,4 @@
 const { expressjwt: jwt } = require('express-jwt');
-const ErrorResponse = require('../utils/error');
 
 // Function used to extract the JWT token from the request's 'Authorization' Headers
 function getTokenFromHeaders(req) {
@@ -23,7 +22,7 @@ const isAdmin = (req, res, next) => {
   if (req.payload.role === 'admin') {
     next()
   } else {
-    next(new ErrorResponse('User is not admin', 401));
+    res.status(401).json({ message: 'User is not admin'})
     return;
   }
 }

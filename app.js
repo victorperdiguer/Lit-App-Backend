@@ -4,7 +4,6 @@ const createError = require('http-errors');
 const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
-const errorHandler = require('./middlewares/errorHandler');
 
 // Routers require
 const indexRouter = require('./routes/index');
@@ -27,9 +26,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // routes intro
-app.use('/', indexRouter);
+app.use('/api/v1', indexRouter);
 app.use('/api/v1/auth', authRouter);
-app.use(errorHandler);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
