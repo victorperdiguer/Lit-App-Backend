@@ -27,8 +27,18 @@ const isAdmin = (req, res, next) => {
   }
 }
 
+const isSuperAdmin = (req, res, next) => {
+  if (req.payload.role === 'superadmin') {
+    next()
+  } else {
+    res.status(401).json({ message: 'User is not superadmin'})
+    return;
+  }
+}
+
 module.exports = {
   isAuthenticated,
-  isAdmin
+  isAdmin,
+  isSuperAdmin
 }
 
