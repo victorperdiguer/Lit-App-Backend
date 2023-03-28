@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 const User = require('./User');
 const Category = require('./Category');
+const Circle = require('./Circle');
 
 const questionSchema = new mongoose.Schema({
+  emoji: {
+    type: String,
+    default: "😳",
+    required: true
+  },
   question: {
     type: String,
     required: true
@@ -30,12 +36,19 @@ const questionSchema = new mongoose.Schema({
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
   //if this property is true, the question is global and all circles have it
   general: {
     type: Boolean,
     default: false
+  },
+  //the question must be created for a given circle
+  circle: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Circle',
+    required: true
   }
 }, { timestamps: true });
 
