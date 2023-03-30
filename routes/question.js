@@ -120,7 +120,7 @@ router.put('/:questionId/edit', isAuthenticated, isAdmin, async (req, res, next)
 // @route   DELETE /question/delete/:id
 // @access  Must be authenticated and must have admin role
 router.delete('/:questionId/delete', isAuthenticated, isAdmin, async(req, res, next) => {
-  const questionId = req.params;
+  const {questionId} = req.params;
   try {
     const deletedQuestion = await Question.findByIdAndDelete(questionId);
     if (!deletedQuestion) {
