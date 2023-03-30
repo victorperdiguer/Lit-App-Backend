@@ -44,7 +44,7 @@ router.post('/signup', async (req, res, next) => {
 });
 
 // @desc    LOG IN user
-// @route   POST /api/v1/auth/login
+// @route   POST /auth/login
 // @access  Public
 router.post('/login', async (req, res, next) => { 
   console.log(req.headers);
@@ -89,7 +89,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 // @desc    GET logged in user
-// @route   GET /api/v1/auth/me
+// @route   GET /auth/me
 // @access  Private
 router.get('/me', isAuthenticated, (req, res, next) => {
   // If JWT token is valid the payload gets decoded by the

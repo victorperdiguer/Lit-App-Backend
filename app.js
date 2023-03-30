@@ -33,9 +33,9 @@ app.use('/', indexRouter);            // routes for the homepage
 app.use('/auth', authRouter);         // routes for authentication
 app.use('/question', questionRouter); // routes for questions
 app.use('/circle', circleRouter);     // routes for circles
-app.use('/leaderboard', leaderboardRouter); // routes for leaderboard
-app.use('/notification', notificationRouter); // routes for notifications
-app.use('/payment', paymentRouter);   // routes for payments
+// app.use('/leaderboard', leaderboardRouter); // routes for leaderboard
+// app.use('/notification', notificationRouter); // routes for notifications
+// app.use('/payment', paymentRouter);   // routes for payments
 app.use('/user', userRouter);   // routes for user profiles
 app.use('/userAnswer', userAnswerRouter); // routes for user answers
 
