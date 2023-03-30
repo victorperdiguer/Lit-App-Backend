@@ -24,4 +24,6 @@ const userAnswerSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-module.exports = mongoose.model('UserAnswer', userAnswerSchema);
+const UserAnswer = mongoose.model('UserAnswer', userAnswerSchema);
+
+module.exports = UserAnswer;

@@ -40,7 +40,7 @@ const questionSchema = new mongoose.Schema({
     required: true
   },
   //if this property is true, the question is global and all circles have it
-  general: {
+  isGlobal: {
     type: Boolean,
     default: false
   },
@@ -52,4 +52,6 @@ const questionSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Question', questionSchema);
+const Question = mongoose.model('Question', questionSchema);
+
+module.exports = Question;

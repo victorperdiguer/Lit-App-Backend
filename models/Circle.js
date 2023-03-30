@@ -21,6 +21,6 @@ const circleSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-const CircleModel = mongoose.model('Circle', circleSchema);
+const Circle = mongoose.model('Circle', circleSchema);
 
-module.exports = CircleModel;
+module.exports = Circle;
