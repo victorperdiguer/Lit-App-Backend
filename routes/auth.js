@@ -9,9 +9,10 @@ const saltRounds = 10;
 // @route   POST /auth/signup
 // @access  Public
 router.post('/signup', async (req, res, next) => {
-  const { email, password, username } = req.body;
+  const { name, surname, email, password, gender } = req.body;
+  console.log(req.body);
   // Check if email or password or name are provided as empty string 
-  if (email === "" || password === "" || username === "") {
+  if (name === "" || surname === "" || email === "" || password === "" || gender === "") {
     res.status(400).json({ message: 'Please fill all the fields to register' });
     return;
   }
@@ -28,14 +29,16 @@ router.post('/signup', async (req, res, next) => {
     return;
   }
   try {
-    const userInDB = await User.findOne({ email });
+    const userInDB = await User.findOne({ 'profile.email': email });
     if (userInDB) {
       res.status(400).json({ message: `User already exists with email ${email}` })
       return;
     } else {
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(password, salt);
-      const newUser = await User.create({ email, hashedPassword, username });
+      const newUser = await User.create({ 
+        profile: { name, surname, email, hashedPassword, gender }
+      });
       res.status(201).json({ data: newUser });
     }
   } catch (error) {
@@ -56,7 +59,7 @@ router.post('/login', async (req, res, next) => {
   }
   try {
     // First let's see if the user exists
-    const userInDB = await User.findOne({ email });
+    const userInDB = await User.findOne({ profile: {email} });
     // If they don't exist, return an error
     if (!userInDB) {
       res.status(404).json({ success: false, message: `No user registered by email ${email}` })
@@ -66,10 +69,7 @@ router.post('/login', async (req, res, next) => {
       if (passwordMatches) {
         // Let's create what we want to store in the jwt token
         const payload = {
-          email: userInDB.email,
-          username: userInDB.username,
-          role: userInDB.role,
-          _id: userInDB._id
+          userInDB
         }
         // Use the jwt middleware to create de token
         const authToken = jwt.sign(
