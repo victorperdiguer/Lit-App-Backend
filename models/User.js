@@ -2,59 +2,56 @@ const mongoose = require('mongoose');
 const Circle = require('./Circle');
 
 const userSchema = new mongoose.Schema({
-  //user model has a 'profile' object containing the user's actual personal data
-  profile: {
-    name: {
-      type: String,
-      required: true
-    },
-    surname: {
-      type: String,
-      required: true
-    },
-    role: {
-      type: String,
-      enum: ['user', 'superadmin'],
-      default: 'user',
-      required: true
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true
-    },
-    phone: {
+  name: {
+    type: String,
+    required: true
+  },
+  surname: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['user', 'superadmin'],
+    default: 'user',
+    required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  phone: {
+    type: String
+  },
+  hashedPassword: {
+    type: String,
+    required: true
+  },
+  socialMedia: {
+    instagram: {
       type: String
     },
-    hashedPassword: {
-      type: String,
-      required: true
-    },
-    socialMedia: {
-      instagram: {
-        type: String
-      },
-      tiktok: {
-        type: String
-      },
-      snapchat: {
-        type: String
-      },
-      facebook: {
-        type: String
-      }
-    },
-    dateOfBirth: {
-      type: Date
-    },
-    picture: {
+    tiktok: {
       type: String
     },
-    gender: {
-      type: String,
-      enum: ['male', 'female', 'other'],
-      required: true,
+    snapchat: {
+      type: String
+    },
+    facebook: {
+      type: String
     }
+  },
+  dateOfBirth: {
+    type: Date
+  },
+  picture: {
+    type: String
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other'],
+    required: true,
   },
   //these are properties used to handle the user's daily activites
   money: {
