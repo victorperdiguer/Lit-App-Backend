@@ -69,16 +69,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  //these properties identify what circle the user belongs to and his role in the circle
-  circlePermissions: {
-    userPermission: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: 'Circle'
-    },
-    adminPermission: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: 'Circle'
-    }
+  //these properties identify what circle the user belongs to
+  circles: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Circle'
   }
 }, {timestamps: true});
 
