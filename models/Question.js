@@ -30,7 +30,7 @@ const questionSchema = new mongoose.Schema({
     default: false
   },
   //a question can be safe or not safe to comply with user preferences
-  safe: {
+  isSafe: {
     type: Boolean,
     default: false
   },
