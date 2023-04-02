@@ -28,19 +28,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  socialMedia: {
-    instagram: {
-      type: String
-    },
-    tiktok: {
-      type: String
-    },
-    snapchat: {
-      type: String
-    },
-    facebook: {
-      type: String
-    }
+  instagram: {
+    type: String
+  },
+  tiktok: {
+    type: String
+  },
+  snapchat: {
+    type: String
   },
   dateOfBirth: {
     type: Date
@@ -52,6 +47,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['male', 'female', 'other'],
     required: true,
+  },
+   safeMode: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   },
   //these are properties used to handle the user's daily activites
   money: {
@@ -65,9 +68,8 @@ const userSchema = new mongoose.Schema({
   lastAnsweredDate: {
     type: Date
   },
-  safeMode: {
-    type: Boolean,
-    default: false
+  lastProfileEdit: {
+    type: Date
   },
   //these properties identify what circle the user belongs to
   circles: {

@@ -42,49 +42,6 @@ router.get('/single/:questionId', isAuthenticated, async (req, res, next) => {
   }
 });
 
-// @desc    Gets 4 random users from same circle as question, with at least 2 different genders
-// @route   GET /question/answer-options/:questionId
-// @access  Must be authenticated
-router.get('/answer-options/:questionId', isAuthenticated, async (req, res, next) => {
-  const { questionId } = req.params;
-  try {
-    const question = await Question.findById(questionId).populate('circle');
-    if (!question) {
-      return res.status(404).json({ msg: 'Question not found' });
-    }
-    let users = [];
-    if (question.general) {
-      // If the question is general, select a random circle that the user is a part of
-      const circles = await User.findById(req.payload.id).circles;
-      if (circles.length === 0) {
-        return res.status(404).json({ msg: 'No circles found for user' });
-      }
-      const randomCircle = circles[Math.floor(Math.random() * circles.length)];
-      users = await User.aggregate([
-        // Select 4 random users from the circle, with at least 2 different genders
-        { $match: { _id: { $nin: [req.user._id] }, 'profile.gender': { $exists: true }, 'circlePermissions.userPermission': randomCircle._id } },
-        { $sample: { size: 4 } },
-        { $group: { _id: '$profile.gender' } },
-        { $match: { $or: [{ _id: 'male' }, { _id: 'female' }] } },
-        { $limit: 4 }
-      ]);
-    } else {
-      // If the question belongs to a specific circle, select 4 random users from the same circle, with at least 2 different genders
-      users = await UserModel.aggregate([
-        { $match: { _id: { $nin: [req.user._id] }, 'profile.gender': { $exists: true }, 'circlePermissions.userPermission': question.circle._id } },
-        { $sample: { size: 4 } },
-        { $group: { _id: '$profile.gender' } },
-        { $match: { $or: [{ _id: 'male' }, { _id: 'female' }] } },
-        { $limit: 4 }
-      ]);
-    }
-
-    res.status(200).json(users);
-  } catch (err) {
-    next(err);
-  }
-});
-
 // @desc    Posts new question to DB
 // @route   POST /question/create
 // @access  Must be authenticated
@@ -170,6 +127,49 @@ router.patch('/validate/:questionId', isAuthenticated, async (req, res, next) =>
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Gets 4 random users from same circle as question, with at least 2 different genders
+// @route   GET /question/answer-options/:questionId
+// @access  Must be authenticated
+router.get('/answer-options/:questionId', isAuthenticated, async (req, res, next) => {
+  const { questionId } = req.params;
+  //See route /question/single/random to understand this part
+  const circleObjectIds = req.payload.circles.map(id => mongoose.Types.ObjectId(id));
+  //this will be the array we will return in the response
+  let users = [];
+  try {
+    const question = await Question.findById(questionId);
+    if (!question) {
+      res.status(404).json({ msg: 'Question not found' });
+      return;
+    }
+    let selectedCircle = question.circle;
+    // If the question is general, select a random circle that the user is a member of
+    if (question.general) {
+      const userCircles = await User.findById(req.payload._id).circles;
+      if (userCircles.length === 0) {
+        res.status(404).json({ msg: 'No circles found for user' });
+        return;
+      }
+      selectedCircle = userCircles[Math.floor(Math.random() * userCircles.length)];
+    }
+    // We start by dividing the circles' users into 2 lists based on gender.
+    const allCircleUsers = await User.find({selectedCircle: { $in: {circleObjectIds}}});
+    const maleUsers = allCircleUsers.filter((user) => user.gender === 'male');
+    const femaleUsers = allCircleUsers.filter((user) => user.gender === 'female');
+    //We select 1 male and 1 female if possible, then fill out the rest without repeating those already selected.
+    maleUsers.length !== 0 ? users.push(maleUsers[Math.floor(Math.random() * maleUsers.length)]) : null;
+    femaleUsers.length !== 0 ? users.push(femaleUsers[Math.floor(Math.random() * femaleUsers.length)]) : null;
+    while (users.length < Math.min(4, allCircleUsers.length)) {
+      //We filter the allCircleUsers array to contain only users that haven't been chosen yet
+      const remainingCircleUsers = allCircleUsers.filter((potentialUser) => !users.some((alreadyChosenUser) => potentialUser._id === alreadyChosenUser._id));
+      users.push(remainingCircleUsers[Math.foor(Math.random() * remainingCircleUsers.length)]);
+    }
+    res.status(200).json({users: users});
+  } catch (err) {
+    next(err);
   }
 });
     

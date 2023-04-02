@@ -18,14 +18,14 @@ const isAuthenticated = jwt({
   getToken: getTokenFromHeaders//token
 });
 
-const isAdmin = (req, res, next) => {
-  if (req.payload.role === 'admin') {
-    next()
-  } else {
-    res.status(401).json({ message: 'User is not admin'})
-    return;
-  }
-}
+// const isAdmin = (req, res, next) => {
+//   if (req.payload.role === 'admin') {
+//     next()
+//   } else {
+//     res.status(401).json({ message: 'User is not admin'})
+//     return;
+//   }
+// }
 
 // const isSuperAdmin = (req, res, next) => {
 //   if (req.payload.role === 'superadmin') {
@@ -37,7 +37,6 @@ const isAdmin = (req, res, next) => {
 // }
 
 module.exports = {
-  isAuthenticated,
-  isAdmin
+  isAuthenticated
 }
 
