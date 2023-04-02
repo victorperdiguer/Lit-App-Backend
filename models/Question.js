@@ -24,10 +24,11 @@ const questionSchema = new mongoose.Schema({
       ref: 'Category'
     }
   },
-  //a question must be approved by the circle admin before being accepted into the rotation
-  approved: {
-    type: Boolean,
-    default: false
+  //a question's status has 3 options: pending approval, approved (so it becomes part of the rotation) and rejected. When questions are submitted, they are pending a status by default. Admins can either approve or reject them.
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
   },
   //a question can be safe or not safe to comply with user preferences
   isSafe: {
