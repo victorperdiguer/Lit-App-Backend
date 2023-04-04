@@ -2,10 +2,10 @@ const router = require('express').Router();
 const {isAuthenticated, isAdmin} = require('../middlewares/jwt');
 const UserAnswer = require('../models/UserAnswer');
 
-// @desc    Get all user actions
-// @route   GET /user-answer/:userId
+// @desc    Get all user answers that had 
+// @route   GET /answer/:userId
 // @access  Must be authenticated
-router.get('/user-answer/:userId', isAuthenticated, async (req, res, next) => {
+router.get('/answer/me/:userId', isAuthenticated, async (req, res, next) => {
   try {
     const userAnswers = await UserAnswer.find({ userAsked: req.params.userId }).populate('questionId').populate('userAnswered').populate('usersIgnored');
     if (!userAnswers) {
@@ -20,7 +20,7 @@ router.get('/user-answer/:userId', isAuthenticated, async (req, res, next) => {
 // @desc    Registers user answer
 // @route   POST /user-answer/:questionId
 // @access  Must be authenticated
-router.post('/user-answer/:questionId', isAuthenticated, async (req, res, next) => {
+router.post('/answer/create/:questionId', isAuthenticated, async (req, res, next) => {
   try {
     const { questionId } = req.params;
     const { userAnswered, usersIgnored } = req.body;

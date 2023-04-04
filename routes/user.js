@@ -10,7 +10,7 @@ const saltRounds = 10;
 // @access  Must be authenticated
 router.get('/', isAuthenticated, async (req, res, next) => {
   try {
-    const user = await UserModel.findById(req.user.id).select('-hashedPassword -circlePermissions -__v');
+    const user = await UserModel.findById(req.payload._id);
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
@@ -93,29 +93,48 @@ router.patch('/edit', isAuthenticated, async (req, res, next) => {
 
   try {
     //check email is unique
-    const userInDB = await User.findOne({ email: email });
-    if (userInDB) {
-      res.status(400).json({ message: "Email is already being used by another user" });
-      return;
+    console.log("check");
+    if (email) {
+      const userInDB = await User.findOne({ email: email });
+      console.log("check2");
+      console.log(userInDB);
+      if (userInDB) {
+        res.status(400).json({ message: "Email is already being used by another user" });
+        return;
+      }
     }
     // First, update the user's information in the database
-    const updatedUser = await User.findByIdAndUpdate(req.payload._id, {
-      $set: {
-        name, surname, email, password, phone, gender, instagram, tiktok, snapchat, dateOfBirth, safeMode
-      }
-    }, { new: true });
-
+    console.log(req.payload._id);
+    const updatedUser = await User.findByIdAndUpdate(
+        req.payload._id,
+        {name, surname, email, password, phone, gender, instagram, tiktok, snapchat, dateOfBirth, safeMode},
+        { new: true }
+      );
+    console.log(updatedUser);
     // Update the user's information in the token payload
     const updatedPayload = {
       ...req.payload,
-      name: name || req.payload.name,
-      surname: surname || req.payload.surname,
-      email: email || req.payload.email,
-      gender: gender || req.payload.gender,
-      safeMode: safeMode || req.payload.safeMode
+      name: updatedUser.name,
+      surname: updatedUser.surname,
+      email: updatedUser.email,
+      gender: updatedUser.gender,
+      safeMode: updatedUser.safeMode
     };
-    const updatedToken = jwt.sign(updatedPayload, process.env.TOKEN_SECRET, { algorithm: 'HS256', expiresIn: "30d" });
-    res.status(200).json({ updatedUser, authToken: updatedToken });
+    console.log(updatedPayload);
+
+
+    const authToken = jwt.sign(
+      updatedPayload,
+      process.env.TOKEN_SECRET,
+      { algorithm: 'HS256', expiresIn: "30d" }
+    );
+
+
+
+   // console.log(updatedToken, "hola");
+
+
+    res.status(200).json({ updatedUser });
   } catch (error) {
     next(error);
   }

@@ -15,7 +15,7 @@ const circleRouter = require('./routes/circle');
 // const notificationRouter = require('./routes/notification');
 // const paymentRouter = require('./routes/payment');
 const userRouter = require('./routes/user');
-const userAnswerRouter = require('./routes/userAnswer');
+const answerRouter = require('./routes/userAnswer');
 
 const app = express();
 
@@ -39,7 +39,7 @@ app.use('/circle', circleRouter);     // routes for circles
 // app.use('/notification', notificationRouter); // routes for notifications
 // app.use('/payment', paymentRouter);   // routes for payments
 app.use('/user', userRouter);   // routes for user profiles
-app.use('/userAnswer', userAnswerRouter); // routes for user answers
+app.use('/answer', answerRouter); // routes for user answers
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

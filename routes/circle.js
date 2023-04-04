@@ -36,7 +36,6 @@ router.get('/admins/:circleId', isAuthenticated, async (req, res, next) => {
   }
 });
 
-
 // @desc    Create a new circle
 // @route   POST /circle
 // @access  Must be authenticated
@@ -84,6 +83,30 @@ router.patch('/exit/:circleId', isAuthenticated, async (req, res, next) => {
     }
     const updatedUser = await User.findByIdAndUpdate(req.payload._id, {
       $pull: { 'circles': circleId }
+    }, { new: true });
+    res.status(201).json(updatedUser);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// @desc    User joins circle as regular user
+// @route   PUT /circle/join/:circleId
+// @access  Must be authenticated
+router.put('/join/:circleId', isAuthenticated, async (req, res, next) => {
+  const { circleId } = req.params;
+  try { 
+    const user = await User.findById(req.payload._id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+    if (user.circles.includes(circleId)) {
+      res.status(404).json({success: false, message: 'User already belongs to circle'});
+      return;
+    }
+    const updatedUser = await User.findByIdAndUpdate(req.payload._id, {
+      $set: { 'circles': circleId }
     }, { new: true });
     res.status(201).json(updatedUser);
   } catch (err) {

@@ -79,7 +79,7 @@ router.post('/login', async (req, res, next) => {
           safeMode,
           circles
         };
-        // Use the jwt middleware to create de token
+        // Use the jwt middleware to create the token
         const authToken = jwt.sign(
           payload,
           process.env.TOKEN_SECRET,

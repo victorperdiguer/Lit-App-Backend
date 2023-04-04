@@ -130,10 +130,46 @@ router.patch('/validate/:questionId', isAuthenticated, async (req, res, next) =>
   }
 });
 
+// @desc    Gets 4 random users from same circle as question
+// @route   GET /question/answer-options/:questionId
+// @access  Must be authenticated
+router.get('/answer-options-simple/:questionId', isAuthenticated, async (req, res, next) => {
+  const { questionId } = req.params;
+  //See route /question/single/random to understand this part
+  const circleObjectIds = req.payload.circles.map(id => mongoose.Types.ObjectId(id));
+  //this will be the array we will return in the response
+  let users = [];
+  try {
+    const question = await Question.findById(questionId);
+    if (!question) {
+      res.status(404).json({ msg: 'Question not found' });
+      return;
+    }
+    let selectedCircle = question.circle;
+    // If the question is general, select a random circle that the user is a member of
+    if (question.general) {
+      const userCircles = await User.findById(req.payload._id).circles;
+      if (userCircles.length === 0) {
+        res.status(404).json({ msg: 'No circles found for user' });
+        return;
+      }
+      selectedCircle = userCircles[Math.floor(Math.random() * userCircles.length)];
+    }
+
+    const users = await User.aggregate([
+      { $match: { circles: { $in: {circleObjectIds} } } },
+      { $sample: { size: 4 } }
+    ]);
+    res.status(200).json({users});
+  } catch (error) {
+    next(error);
+  }
+})
+
 // @desc    Gets 4 random users from same circle as question, with at least 2 different genders
 // @route   GET /question/answer-options/:questionId
 // @access  Must be authenticated
-router.get('/answer-options/:questionId', isAuthenticated, async (req, res, next) => {
+router.get('/answer-options-complex/:questionId', isAuthenticated, async (req, res, next) => {
   const { questionId } = req.params;
   //See route /question/single/random to understand this part
   const circleObjectIds = req.payload.circles.map(id => mongoose.Types.ObjectId(id));
@@ -167,7 +203,7 @@ router.get('/answer-options/:questionId', isAuthenticated, async (req, res, next
       const remainingCircleUsers = allCircleUsers.filter((potentialUser) => !users.some((alreadyChosenUser) => potentialUser._id === alreadyChosenUser._id));
       users.push(remainingCircleUsers[Math.foor(Math.random() * remainingCircleUsers.length)]);
     }
-    res.status(200).json({users: users});
+    res.status(200).json({users});
   } catch (err) {
     next(err);
   }
