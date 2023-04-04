@@ -1,15 +1,23 @@
 const router = require('express').Router();
 const {isAuthenticated, isAdmin} = require('../middlewares/jwt');
 const UserAnswer = require('../models/UserAnswer');
+const User = require('../models/User');
 
-// @desc    Get all user answers that had 
+// @desc    Get all user answers that have the user as the answer
 // @route   GET /answer/:userId
 // @access  Must be authenticated
 router.get('/answer/me/:userId', isAuthenticated, async (req, res, next) => {
+  const { userId } = req.params;
+  const { payloadUser } = req.payload._id;
+  if (userId !== payloadUser) {
+    res.status(403).json({msg: "Forbidden: user ID not matching request user ID"});
+    return;
+  }
   try {
-    const userAnswers = await UserAnswer.find({ userAsked: req.params.userId }).populate('questionId').populate('userAnswered').populate('usersIgnored');
+    const userAnswers = await UserAnswer.find({ userAnswered: req.payload._id });
     if (!userAnswers) {
-      return res.status(404).json({ msg: 'No user actions found' });
+      res.status(404).json({msg: 'No user answers found' });
+      return;
     }
     res.status(200).json(userAnswers);
   } catch (err) {
@@ -21,22 +29,87 @@ router.get('/answer/me/:userId', isAuthenticated, async (req, res, next) => {
 // @route   POST /user-answer/:questionId
 // @access  Must be authenticated
 router.post('/answer/create/:questionId', isAuthenticated, async (req, res, next) => {
+  const { questionId } = req.params;
+  const { userAnswered, usersIgnored } = req.body;
+  const userAsked = req.payload._id;
   try {
-    const { questionId } = req.params;
-    const { userAnswered, usersIgnored } = req.body;
-    const userAsked = req.user._id;
-
     const userAnswer = new UserAnswer.create({
       questionId,
       userAsked,
       userAnswered,
       usersIgnored
     });
+    //update answer history of user
+    User.findOneAndUpdate(
+      { _id: userAsked },
+      { 
+        $inc: { dailyQuestionsAnswered: 1 },
+        $inc: { money: 1},
+        lastAnsweredDate: Date.now() 
+      },
+      { new: true },
+    );
 
     res.status(200).json(userAnswer);
   } catch (err) {
     next(err);
   }
 });
+
+// @desc    Allows user to skip question
+// @route   POST /answer/skip
+// @access  Must be authenticated
+router.post('/answer/skip', isAuthenticated, async (req, res, next) => {
+  const userAsked = req.user._id;
+  try {
+    //check if user has enough money
+    const money = User.findById(userAsked).money;
+    if (money>=10) {
+      //update answer history of user
+      const updatedUser = User.findOneAndUpdate(
+        { _id: userAsked },
+        { 
+          $inc: { dailyQuestionsAnswered: 1 },
+          $inc: { money: -10}
+        },
+        { new: true },
+      );
+      res.status(200).json(updatedUser);
+    }
+    else {
+      res.status(402).json({msg: "Insufficient money"});
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// @desc    Allows user to shuffle question and not answer it
+// @route   POST /answer/shuffle
+// @access  Must be authenticated
+router.post('/answer/shuffle', isAuthenticated, async (req, res, next) => {
+  const userAsked = req.user._id;
+  try {
+    //check if user has enough money
+    const money = User.findById(userAsked).money;
+    if (money>=5) {
+      //update answer history of user
+      const updatedUser = User.findOneAndUpdate(
+        { _id: userAsked },
+        { 
+          $inc: { money: -5}
+        },
+        { new: true },
+      );
+      res.status(200).json(updatedUser);
+    }
+    else {
+      res.status(402).json({msg: "Insufficient money"});
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 module.exports = router;
