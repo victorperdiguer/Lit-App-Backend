@@ -19,7 +19,7 @@ router.get('/', isAuthenticated, async (req, res, next) => {
   }
 });
 
-// @desc    Gets all circle admins
+// @desc    Gets all admins from a circle
 // @route   GET /circle/admins/:circleId
 // @access  Must be authenticated
 router.get('/admins/:circleId', isAuthenticated, async (req, res, next) => {
@@ -67,9 +67,9 @@ router.post('/create', isAuthenticated, async (req, res, next) => {
 });
 
 // @desc    Allows a user to exit a circle
-// @route   PATCH /circle/exit/:circleId
+// @route   DELETE /circle/exit/:circleId
 // @access  Must be authenticated
-router.patch('/exit/:circleId', isAuthenticated, async (req, res, next) => {
+router.delete('/exit/:circleId', isAuthenticated, async (req, res, next) => {
   const { circleId } = req.params;
   try { 
     const user = await User.findById(req.payload._id);

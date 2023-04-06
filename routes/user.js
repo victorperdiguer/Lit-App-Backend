@@ -10,7 +10,7 @@ const saltRounds = 10;
 // @access  Must be authenticated
 router.get('/', isAuthenticated, async (req, res, next) => {
   try {
-    const user = await UserModel.findById(req.payload._id);
+    const user = await User.findById(req.payload._id);
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
@@ -103,14 +103,15 @@ router.patch('/edit', isAuthenticated, async (req, res, next) => {
         return;
       }
     }
+    const salt = bcrypt.genSaltSync(saltRounds);
+    let hashedPassword = "";
+    password ? hashedPassword = bcrypt.hashSync(password, salt) : null;
     // First, update the user's information in the database
-    console.log(req.payload._id);
     const updatedUser = await User.findByIdAndUpdate(
         req.payload._id,
-        {name, surname, email, password, phone, gender, instagram, tiktok, snapchat, dateOfBirth, safeMode},
+        {name, surname, email, hashedPassword, phone, gender, instagram, tiktok, snapchat, dateOfBirth, safeMode},
         { new: true }
       );
-    console.log(updatedUser);
     // Update the user's information in the token payload
     const updatedPayload = {
       ...req.payload,
@@ -120,21 +121,17 @@ router.patch('/edit', isAuthenticated, async (req, res, next) => {
       gender: updatedUser.gender,
       safeMode: updatedUser.safeMode
     };
-    console.log(updatedPayload);
-
-
-    const authToken = jwt.sign(
-      updatedPayload,
-      process.env.TOKEN_SECRET,
-      { algorithm: 'HS256', expiresIn: "30d" }
-    );
-
-
-
-   // console.log(updatedToken, "hola");
-
-
-    res.status(200).json({ updatedUser });
+    try {
+      const authToken = jwt.sign(
+        updatedPayload,
+        process.env.TOKEN_SECRET,
+        { algorithm: 'HS256'}
+      );
+      res.status(200).json({ updatedUser, authToken });
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
   } catch (error) {
     next(error);
   }
