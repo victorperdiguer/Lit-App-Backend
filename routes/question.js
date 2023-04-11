@@ -131,24 +131,29 @@ router.patch('/validate/:questionId', isAuthenticated, async (req, res, next) =>
 });
 
 // @desc    Gets 4 random users from same circle as question
-// @route   GET /question/answer-options/:questionId
+// @route   GET /question/answer-options-simple/:questionId
 // @access  Must be authenticated
 router.get('/answer-options-simple/:questionId', isAuthenticated, async (req, res, next) => {
   const { questionId } = req.params;
   //See route /question/single/random to understand this part
   const circleObjectIds = req.payload.circles.map(id => mongoose.Types.ObjectId(id));
+  const questionIdMongo = mongoose.Types.ObjectId(questionId);
   //this will be the array we will return in the response
   let users = [];
   try {
-    const question = await Question.findById(questionId);
+    const question = await Question.findOne({'_id': questionIdMongo});
+    console.log(question);
     if (!question) {
       res.status(404).json({ msg: 'Question not found' });
       return;
     }
     let selectedCircle = question.circle;
-    // If the question is general, select a random circle that the user is a member of
-    if (question.general) {
-      const userCircles = await User.findById(req.payload._id).circles;
+    // If the question is global, select a random circle that the user is a member of
+    if (question.isGlobal) {
+      console.log("hola");
+      const user = await User.findById(req.payload._id);
+      const userCircles = user.circles;
+      console.log(user);
       if (userCircles.length === 0) {
         res.status(404).json({ msg: 'No circles found for user' });
         return;

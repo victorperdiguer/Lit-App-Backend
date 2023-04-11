@@ -97,16 +97,22 @@ router.put('/join/:circleId', isAuthenticated, async (req, res, next) => {
   const { circleId } = req.params;
   try { 
     const user = await User.findById(req.payload._id);
+    console.log(user);
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
     if (user.circles.includes(circleId)) {
-      res.status(404).json({success: false, message: 'User already belongs to circle'});
+      res.status(409).json({success: false, message: 'User already belongs to circle'});
+      return;
+    }
+    const circleExists = await Circle.findById(circleId);
+    if (!circleExists) {
+      res.status(404).json({success: false, message: 'Circle not found' });
       return;
     }
     const updatedUser = await User.findByIdAndUpdate(req.payload._id, {
-      $set: { 'circles': circleId }
+      $push: { 'circles': circleId }
     }, { new: true });
     res.status(201).json(updatedUser);
   } catch (err) {
