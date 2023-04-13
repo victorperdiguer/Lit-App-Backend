@@ -32,27 +32,24 @@ router.post('/create/:questionId', isAuthenticated, async (req, res, next) => {
   const { questionId } = req.params;
   const { userAnswered, usersIgnored } = req.body;
   const userAsked = req.payload._id;
-  console.log(req.params, req.body, req.payload._id, "hola");
   try {
-    const userAnswer = new UserAnswer.create({
+    const userAnswer = await UserAnswer.create({
       questionId,
       userAsked,
       userAnswered,
       usersIgnored
     });
     //update answer history of user
-    User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       { _id: userAsked },
       { 
-        $inc: { dailyQuestionsAnswered: 1 },
-        $inc: { money: 1},
+        $inc: { dailyQuestionsAnswered: 1, money: 1 },
         lastAnsweredDate: Date.now() 
       },
       { new: true },
     );
-    console.log("adios");
 
-    res.status(200).json(userAnswer);
+    res.status(200).json({answer: userAnswer, updatedUser: updatedUser});
   } catch (err) {
     next(err);
   }
