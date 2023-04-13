@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {isAuthenticated, isAdmin} = require('../middlewares/jwt');
+const {isAuthenticated} = require('../middlewares/jwt');
 const UserAnswer = require('../models/UserAnswer');
 const User = require('../models/User');
 
@@ -59,17 +59,18 @@ router.post('/create/:questionId', isAuthenticated, async (req, res, next) => {
 // @route   POST /answer/skip
 // @access  Must be authenticated
 router.post('/skip', isAuthenticated, async (req, res, next) => {
-  const userAsked = req.user._id;
+  const userAsked = req.payload._id;
   try {
     //check if user has enough money
-    const money = User.findById(userAsked).money;
-    if (money>=10) {
+    const user = await User.findById(userAsked);
+    console.log(user);
+    console.log(user.money);
+    if (user.money>=10) {
       //update answer history of user
-      const updatedUser = User.findOneAndUpdate(
+      const updatedUser = await User.findOneAndUpdate(
         { _id: userAsked },
         { 
-          $inc: { dailyQuestionsAnswered: 1 },
-          $inc: { money: -10}
+          $inc: { dailyQuestionsAnswered: 1, money: -10 },
         },
         { new: true },
       );
@@ -87,13 +88,14 @@ router.post('/skip', isAuthenticated, async (req, res, next) => {
 // @route   POST /answer/shuffle
 // @access  Must be authenticated
 router.post('/shuffle', isAuthenticated, async (req, res, next) => {
-  const userAsked = req.user._id;
+  const userAsked = req.payload._id;
   try {
     //check if user has enough money
-    const money = User.findById(userAsked).money;
-    if (money>=5) {
+    const user = await User.findById(userAsked);
+    console.log(user.money);
+    if (user.money>=5) {
       //update answer history of user
-      const updatedUser = User.findOneAndUpdate(
+      const updatedUser = await User.findOneAndUpdate(
         { _id: userAsked },
         { 
           $inc: { money: -5}
