@@ -6,7 +6,7 @@ const User = require('../models/User');
 // @desc    Get all user answers that have the user as the answer
 // @route   GET /answer/:userId
 // @access  Must be authenticated
-router.get('/answer/me/:userId', isAuthenticated, async (req, res, next) => {
+router.get('/me/:userId', isAuthenticated, async (req, res, next) => {
   const { userId } = req.params;
   const { payloadUser } = req.payload._id;
   if (userId !== payloadUser) {
@@ -26,12 +26,13 @@ router.get('/answer/me/:userId', isAuthenticated, async (req, res, next) => {
 });
 
 // @desc    Registers user answer
-// @route   POST /user-answer/:questionId
+// @route   POST /answer/create/:questionId
 // @access  Must be authenticated
-router.post('/answer/create/:questionId', isAuthenticated, async (req, res, next) => {
+router.post('/create/:questionId', isAuthenticated, async (req, res, next) => {
   const { questionId } = req.params;
   const { userAnswered, usersIgnored } = req.body;
   const userAsked = req.payload._id;
+  console.log(req.params, req.body, req.payload._id, "hola");
   try {
     const userAnswer = new UserAnswer.create({
       questionId,
@@ -49,6 +50,7 @@ router.post('/answer/create/:questionId', isAuthenticated, async (req, res, next
       },
       { new: true },
     );
+    console.log("adios");
 
     res.status(200).json(userAnswer);
   } catch (err) {
@@ -59,7 +61,7 @@ router.post('/answer/create/:questionId', isAuthenticated, async (req, res, next
 // @desc    Allows user to skip question
 // @route   POST /answer/skip
 // @access  Must be authenticated
-router.post('/answer/skip', isAuthenticated, async (req, res, next) => {
+router.post('/skip', isAuthenticated, async (req, res, next) => {
   const userAsked = req.user._id;
   try {
     //check if user has enough money
@@ -87,7 +89,7 @@ router.post('/answer/skip', isAuthenticated, async (req, res, next) => {
 // @desc    Allows user to shuffle question and not answer it
 // @route   POST /answer/shuffle
 // @access  Must be authenticated
-router.post('/answer/shuffle', isAuthenticated, async (req, res, next) => {
+router.post('/shuffle', isAuthenticated, async (req, res, next) => {
   const userAsked = req.user._id;
   try {
     //check if user has enough money

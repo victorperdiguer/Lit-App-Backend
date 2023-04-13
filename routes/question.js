@@ -141,8 +141,7 @@ router.get('/answer-options-simple/:questionId', isAuthenticated, async (req, re
   //this will be the array we will return in the response
   let users = [];
   try {
-    const question = await Question.findOne({'_id': questionIdMongo});
-    console.log(question);
+    const question = await Question.findOne({_id: questionIdMongo});
     if (!question) {
       res.status(404).json({ msg: 'Question not found' });
       return;
@@ -150,10 +149,9 @@ router.get('/answer-options-simple/:questionId', isAuthenticated, async (req, re
     let selectedCircle = question.circle;
     // If the question is global, select a random circle that the user is a member of
     if (question.isGlobal) {
-      console.log("hola");
-      const user = await User.findById(req.payload._id);
+      const user = await User.findOne({_id: req.payload._id});
       const userCircles = user.circles;
-      console.log(user);
+      console.log(userCircles);
       if (userCircles.length === 0) {
         res.status(404).json({ msg: 'No circles found for user' });
         return;
@@ -162,7 +160,7 @@ router.get('/answer-options-simple/:questionId', isAuthenticated, async (req, re
     }
 
     const users = await User.aggregate([
-      { $match: { circles: { $in: {circleObjectIds} } } },
+    //   { $match: { circles: { $in: {circleObjectIds} } } },
       { $sample: { size: 4 } }
     ]);
     res.status(200).json({users});
