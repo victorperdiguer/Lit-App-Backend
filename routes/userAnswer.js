@@ -2,17 +2,12 @@ const router = require('express').Router();
 const {isAuthenticated} = require('../middlewares/jwt');
 const UserAnswer = require('../models/UserAnswer');
 const User = require('../models/User');
+const { findById, findByIdAndUpdate } = require('../models/Category');
 
 // @desc    Get all user answers that have the user as the answer
-// @route   GET /answer/:userId
+// @route   GET /answer/me
 // @access  Must be authenticated
-router.get('/me/:userId', isAuthenticated, async (req, res, next) => {
-  const { userId } = req.params;
-  const { payloadUser } = req.payload._id;
-  if (userId !== payloadUser) {
-    res.status(403).json({msg: "Forbidden: user ID not matching request user ID"});
-    return;
-  }
+router.get('/me', isAuthenticated, async (req, res, next) => {
   try {
     const userAnswers = await UserAnswer.find({ userAnswered: req.payload._id });
     if (!userAnswers) {
@@ -22,6 +17,52 @@ router.get('/me/:userId', isAuthenticated, async (req, res, next) => {
     res.status(200).json(userAnswers);
   } catch (err) {
     next(err);
+  }
+});
+
+// @desc    Retrieves last answered question
+// @route   GET /answer/last
+// @access  Must be authenticated
+router.get('/last', isAuthenticated, async (req, res, next) => {
+  try {
+    const lastUserAnswer = await UserAnswer.findOne({ userAsked: req.payload._id }).sort({createdAt: -1}).exec();
+    if (!lastUserAnswer) {
+      res.status(404).json({msg: 'No user answers found' });
+      return;
+    }
+    console.log(lastUserAnswer);
+    res.status(200).json(lastUserAnswer);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// @desc    Retrieves all questions answered by the user in the current day, returns the number and sets it in the user's document
+// @route   GET /answer/today
+// @access  Must be authenticated
+router.get('/today', isAuthenticated, async (req, res, next) => {
+  try {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const todaysUserAnswers = await UserAnswer.find({
+      userAsked: req.payload._id,
+      createdAt: {
+        $gte: startOfDay,
+        $lt: endOfDay,
+      },
+    }).exec();
+    const dailyQuestionsAnswered = todaysUserAnswers.length;
+    await User.findOneAndUpdate(
+      { _id: req.payload._id },
+      { 
+        dailyQuestionsAnswered: dailyQuestionsAnswered,
+      },
+      { new: true },
+    );
+    res.status(200).json(dailyQuestionsAnswered);
+  } catch (error) {
+    res.status(500).json({ message: 'Error retrieving today\'s UserAnswers', error });
   }
 });
 
