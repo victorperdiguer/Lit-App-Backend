@@ -93,17 +93,6 @@ router.patch('/edit', isAuthenticated, async (req, res, next) => {
   }
 
   try {
-    //check email is unique
-    console.log("check");
-    if (email) {
-      const userInDB = await User.findOne({ email: email });
-      console.log("check2");
-      console.log(userInDB);
-      if (userInDB) {
-        res.status(400).json({ message: "Email is already being used by another user" });
-        return;
-      }
-    }
     const salt = bcrypt.genSaltSync(saltRounds);
     let hashedPassword = "";
     password ? hashedPassword = bcrypt.hashSync(password, salt) : null;
@@ -128,7 +117,7 @@ router.patch('/edit', isAuthenticated, async (req, res, next) => {
         process.env.TOKEN_SECRET,
         { algorithm: 'HS256'}
       );
-      res.status(200).json({ updatedUser, authToken });
+      res.status(200).json({ updatedUser, authToken, message: 'success' });
     } catch (error) {
       console.error(error);
       next(error);
