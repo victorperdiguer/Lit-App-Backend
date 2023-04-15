@@ -10,7 +10,8 @@ const notificationSchema = new mongoose.Schema({
   },
   statusRead: {
     type: Boolean,
-    default: false
+    default: false,
+    required: true
   },
   readDate: {
     type: Date,
@@ -24,16 +25,15 @@ const notificationSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
+  },
+  type: {
+      type: String,
+      enum: ['answer', 'questionApproval'],
+      required: true
+  },
+  content: {
+      type: String,
   }
-  // type: {
-  //     type: String,
-  //     enum: ['answer', 'message'],
-  //     required: true
-  // },
-  // content: {
-  //     type: String,
-  //     required: true
-  // }
 }, { timestamps: true });
 
 const Notification = mongoose.model('Notification', notificationSchema);

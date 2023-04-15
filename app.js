@@ -12,7 +12,7 @@ const categoriesRouter = require('./routes/categories');
 const questionRouter = require('./routes/question');
 const circleRouter = require('./routes/circle');
 // const leaderboardRouter = require('./routes/leaderboard');
-// const notificationRouter = require('./routes/notification');
+const notificationRouter = require('./routes/notification');
 // const paymentRouter = require('./routes/payment');
 const userRouter = require('./routes/user');
 const answerRouter = require('./routes/userAnswer');
@@ -36,7 +36,7 @@ app.use('/categories', categoriesRouter);     //routes for categories
 app.use('/question', questionRouter); // routes for questions
 app.use('/circle', circleRouter);     // routes for circles
 // app.use('/leaderboard', leaderboardRouter); // routes for leaderboard
-// app.use('/notification', notificationRouter); // routes for notifications
+app.use('/notification', notificationRouter); // routes for notifications
 // app.use('/payment', paymentRouter);   // routes for payments
 app.use('/user', userRouter);   // routes for user profiles
 app.use('/answer', answerRouter); // routes for user answers

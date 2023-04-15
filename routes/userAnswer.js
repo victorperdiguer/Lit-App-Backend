@@ -2,7 +2,7 @@ const router = require('express').Router();
 const {isAuthenticated} = require('../middlewares/jwt');
 const UserAnswer = require('../models/UserAnswer');
 const User = require('../models/User');
-const { findById, findByIdAndUpdate } = require('../models/Category');
+const Notification = require('../models/Notification');
 
 // @desc    Get all user answers that have the user as the answer
 // @route   GET /answer/me
@@ -89,6 +89,13 @@ router.post('/create/:questionId', isAuthenticated, async (req, res, next) => {
       },
       { new: true },
     );
+    //post notification
+    const newNotification = await Notification.create({
+      action: userAnswer._id,
+      sender: req.payload._id,
+      recipient: userAnswered,
+      type: 'answer'
+    })
 
     res.status(200).json({answer: userAnswer, updatedUser: updatedUser});
   } catch (err) {
