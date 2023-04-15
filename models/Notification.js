@@ -33,6 +33,11 @@ const notificationSchema = new mongoose.Schema({
   },
   content: {
       type: String,
+  },
+  statusRevealed: {
+      type: Boolean,
+      required: true,
+      default: false
   }
 }, { timestamps: true });
 
