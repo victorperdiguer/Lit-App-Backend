@@ -25,6 +25,7 @@ router.get('/', isAuthenticated, async (req, res, next) => {
 // @access  Private
 router.patch('/edit', isAuthenticated, async (req, res, next) => {
   const { name, surname, email, password, phone, gender, instagram, tiktok, snapchat, dateOfBirth, safeMode } = req.body;
+  console.log(req.body);
   // Check if name is a string
   if (name && typeof name !== "string") {
     res.status(400).json({ message: "Name must be a string" });
