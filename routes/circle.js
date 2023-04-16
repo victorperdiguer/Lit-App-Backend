@@ -31,6 +31,24 @@ router.get('/me', isAuthenticated, async (req, res, next) => {
   }
 });
 
+// @desc    Gets all circles a user is the admin of
+// @route   GET /circle/me/admin
+// @access  Must be authenticated
+router.get('/me/admin', isAuthenticated, async (req, res, next) => {
+  try {
+    // Find all circles where the user is an admin
+    const circles = await Circle.find({ admins: req.payload._id }).populate('admins');
+    
+    if (!circles) {
+      return res.status(404).json({ msg: 'No circles found where the user is an admin' });
+    }
+
+    res.status(200).json(circles);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // @desc    Gets all admins from a circle
 // @route   GET /circle/admins/:circleId
 // @access  Must be authenticated

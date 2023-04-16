@@ -42,6 +42,19 @@ router.get('/single/:questionId', isAuthenticated, async (req, res, next) => {
   }
 });
 
+// @desc    Gets questions by circle and status
+// @route   GET /api/questions/circle/:circleId/status/:status
+// @access  Must be authenticated
+router.get('/circle/:circleId/status/:status', isAuthenticated, async (req, res, next) => {
+  const { circleId, status } = req.params;
+  try {
+    const questions = await Question.find({ circle: circleId, status: status });
+    res.status(200).json(questions);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // @desc    Posts new question to DB
 // @route   POST /question/create
 // @access  Must be authenticated
