@@ -3,12 +3,24 @@ const {isAuthenticated, isAdmin} = require('../middlewares/jwt');
 const Circle = require('../models/Circle');
 const User = require('../models/User');
 
-// @desc    Gets all circles a user belongs to
-// @route   GET /circle
+// @desc    Gets all circles
+// @route   GET /circle/all
 // @access  Must be authenticated
-router.get('/', isAuthenticated, async (req, res, next) => {
+router.get('/all', isAuthenticated, async (req, res, next) => {
   try {
-    const user = await User.findById(req.payload._id);
+    const circles = await Circle.find()
+    res.status(200).json(circles);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// @desc    Gets all circles a user belongs to
+// @route   GET /circle/me
+// @access  Must be authenticated
+router.get('/me', isAuthenticated, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.payload._id).populate('circles');
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
