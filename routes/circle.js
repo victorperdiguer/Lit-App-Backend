@@ -15,6 +15,24 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
   }
 });
 
+// @desc    Gets all users belonging to a circle
+// @route   GET /circle/users/:circleId
+// @access  Must be authenticated
+router.get('/users/:circleId', isAuthenticated, async (req, res, next) => {
+  const { circleId } = req.params;
+  try {
+    const circle = await Circle.findById(circleId);
+    if (!circle) {
+      return res.status(404).json({ msg: 'Circle not found' });
+    }
+
+    const users = await User.find({ circles: circleId }).select('-password');
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // @desc    Gets all circles a user belongs to
 // @route   GET /circle/me
 // @access  Must be authenticated
@@ -149,5 +167,7 @@ router.put('/join/:circleId', isAuthenticated, async (req, res, next) => {
     next(err);
   }
 });
+
+
 
 module.exports = router;

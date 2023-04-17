@@ -59,25 +59,21 @@ router.get('/circle/:circleId/status/:status', isAuthenticated, async (req, res,
 // @route   POST /question/create
 // @access  Must be authenticated
 router.post('/create', isAuthenticated, async (req, res, next) => {
-  const { emoji, question, categories, isSafe, isGlobal, circle } = req.body;
+  const { emoji, questionText, positiveCategories, negativeCategories, selectedCircle } = req.body;
   const author = req.payload._id;
+  const categories = {
+    positive: positiveCategories,
+    negative: negativeCategories
+  }
+  console.log(req.body);
   //check fields
   const error = [];
   const emojiRegex = /\p{Extended_Pictographic}/ug;
   if (!emoji || !emojiRegex.test(emoji)) {
     error.push('emoji');
   }
-  if (typeof question !== 'string' || question.trim() === '') {
+  if (typeof questionText !== 'string' || questionText.trim() === '') {
     error.push('question');
-  }
-  if (typeof isSafe !== 'boolean') {
-    error.push('isSafe');
-  }
-  if (typeof isGlobal !== 'boolean') {
-    error.push('isGlobal');
-  }
-  if (isGlobal === false && !circle) {
-    error.push('circle');
   }
   if (error.length != 0) {
     res.status(400).json({msg: `Invalid format or invalid data in the following fields: ${error}`});
@@ -86,19 +82,17 @@ router.post('/create', isAuthenticated, async (req, res, next) => {
   //create question
   try {
     //check question doesn't exist already
-    const questionAlreadyExists = await Question.findOne({question: question, $or: [{ isGlobal: true }, { circle: { $in: req.payload.circles } }]})
+    const questionAlreadyExists = await Question.findOne({question: questionText, $or: [{ isGlobal: true }, { circle: { $in: req.payload.circles } }]})
     if (questionAlreadyExists) {
       res.status(403).json({msg: `Question already exists`});
       return;
     }
     else {
       const newQuestion = await Question.create({
-        question,
+        question: questionText,
         categories,
-        isSafe,
         author,
-        isGlobal,
-        circle
+        circle: selectedCircle
       });
       res.status(201).json(newQuestion);
     }
