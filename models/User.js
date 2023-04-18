@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
   snapchat: {
     type: String
   },
+  facebook: {
+    type: String
+  },
   dateOfBirth: {
     type: Date
   },
