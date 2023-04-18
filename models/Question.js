@@ -43,7 +43,7 @@ const questionSchema = new mongoose.Schema({
   //if this property is true, the question is global and all circles have it
   isGlobal: {
     type: Boolean,
-    default: false
+    default: true
   },
   //the question must be created for a given circle
   circle: {

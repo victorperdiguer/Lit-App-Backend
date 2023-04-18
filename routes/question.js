@@ -89,6 +89,7 @@ router.post('/create', isAuthenticated, async (req, res, next) => {
     }
     else {
       const newQuestion = await Question.create({
+        emoji,
         question: questionText,
         categories,
         author,
